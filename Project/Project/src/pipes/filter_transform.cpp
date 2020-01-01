@@ -8,8 +8,8 @@ int main()
 	auto destination = std::vector<int>{};
 
 	source
-		>>= pipes::filter([](const int i){return i % 2 == 0; })
-		>>= pipes::transform([](const int i){return i * 2; })
+		>>= pipes::filter([](const int i) { return i % 2 == 0; })
+		>>= pipes::transform([](const int i) { return i * 2; })
 		>>= pipes::push_back(destination);
 
 	for (const auto &v : destination)
