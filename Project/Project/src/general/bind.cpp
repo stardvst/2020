@@ -1,36 +1,23 @@
 #include <iostream>
 #include <functional>
 
-class A
+void f(int n)
 {
-private:
-	using tCallback = std::function<void(int result)>;
+	std::cout << n << '\n';
+}
 
-	void longRunningFunction(tCallback cb)
-	{
-		// ...
-		int result = 0;
-		cb(result);
-	}
-
-	void theCallback(int result)
-	{
-		std::cout << "Result: " << result << '\n';
-	}
-
-public:
-	int longRunningFunctionAsync()
-	{
-		auto callback = std::bind(&A::theCallback, this, std::placeholders::_1);
-
-		// could be called from another thread
-		longRunningFunction(callback);
-	}
-
-};
+void g(int &n)
+{
+	n = 4;
+	std::cout << n << '\n';
+}
 
 int main()
 {
-	A o;
-	o.longRunningFunctionAsync();
+	int n = 4;
+	std::bind(f, std::placeholders::_1);
+	n = 5;
+	f(n);
+
+	g(n);
 }
