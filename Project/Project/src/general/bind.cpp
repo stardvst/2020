@@ -1,6 +1,9 @@
 #include <iostream>
 #include <functional>
 #include <random>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 void f(int n1, int n2, int n3, const int &n4, int n5)
 {
@@ -54,4 +57,10 @@ int main()
 	std::cout << f4(std::make_shared<Foo>(foo)) << ' '
 		<< f4(std::make_unique<Foo>(foo)) << '\n';
 	// prints 10, 10
+
+	std::vector<double> vec{ 1, 2, 3, 4, 5 }, res(vec.size());
+	std::transform(vec.begin(), vec.end(), res.begin(), std::bind(static_cast<double(*)(double, double)>(&std::pow), _1, 2.0));
+	for (const auto &v : res)
+		std::cout << v << ' ';
+	std::cout << '\n';
 }
