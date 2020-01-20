@@ -2,55 +2,53 @@
 #include <vector>
 #include <sstream>
 
-template <typename T>
-std::string toStringImpl(const T &param)
+template <typename ...Args>
+void print(const Args &...t)
 {
+	(void)std::initializer_list<int>{ (std::cout << t << '\n', 0)... };
+}
+
+int f1()
+{
+	std::cout << __FUNCTION__ << '\n';
+	return 1;
+}
+
+int f2()
+{
+	std::cout << __FUNCTION__ << '\n';
+	return 2;
+}
+
+template <typename ...T>
+std::vector<std::string> succintToString(const T &...t)
+{
+	// most succinct way, also least executable size
+	std::vector<std::string> result;
 	std::stringstream ss;
-	ss << param;
-	return ss.str();
-}
-
-std::vector<std::string> toString()
-{
-	return {};
-}
-
-template <typename T, typename ...Args>
-std::vector<std::string> toString(const T &param, const Args &...args)
-{
-	std::vector<std::string> v;
-	v.push_back(toStringImpl(param));
-
-	const auto remainder = toString(args...);
-	v.insert(v.end(), remainder.begin(), remainder.end());
-
-	return v;
-}
-
-template <typename ...Args>
-std::vector<std::string> toStringMid(const Args &...args)
-{
-	// generic lambda
-	const auto toStrimgImplMid = [](const auto &t)
-	{
-		std::stringstream ss;
-		ss << t;
-		return ss.str();
+	(void)std::initializer_list<int>{
+		(ss.str(""),
+		ss << t,
+		result.push_back(ss.str()), 0)...
 	};
-	return { toStrimgImplMid(args)... };
-}
-
-template <typename ...Args>
-std::vector<std::string> toStringBetter(const Args &...args)
-{
-	return { toStringImpl(args)... };
+	return result;
 }
 
 int main()
 {
-	auto vec = toString("hello", 1, 5.3, 1.3f, 1, 2, 3, "world");
-	vec = toStringMid("hello", 1, 5.3, 1.3f, 1, 2, 3, "world");
-	vec = toStringBetter("hello", 1, 5.3, 1.3f, 1, 2, 3, "world");
-	for (const auto &v : vec)
+	// gcc, msvc print f2(), f1()
+	// clang prints f1(), f2()
+	print(f1(), f2());
+
+	std::cout << "----" << '\n';
+
+	// order is guaranteed
+	(void)std::initializer_list<int>{f1(), f2()};
+	auto i = (f1(), f2());
+	std::cout << i << '\n';
+
+	std::cout << "----" << '\n';
+
+	for (const auto &v : succintToString("Hello", "World", 5.4, 1.1, 2.2))
 		std::cout << v << '\n';
 }
