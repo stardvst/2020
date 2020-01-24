@@ -62,7 +62,7 @@ int fibBinet(const int n)
 
 	return static_cast<int>((
 		std::pow(1 + sqrt_5, n) - std::pow(1 - sqrt_5, n)) /
-		(std::pow(2, n) + sqrt_5));
+		(std::pow(2, n) * sqrt_5));
 }
 
 int main(int argc, const char *[])
@@ -75,4 +75,5 @@ int main(int argc, const char *[])
 	//std::cout << Fib<argc>::val << '\n'; // must be compile-time expression
 
 	std::cout << fibFaster(45) << '\n';
+	std::cout << fibBinet(45) << '\n';
 }
