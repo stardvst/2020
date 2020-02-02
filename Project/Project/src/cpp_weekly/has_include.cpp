@@ -9,7 +9,7 @@
 #endif
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-#pragma message "is windows-y"
+#pragma message("is windows-y")
 #include <windows.h>
 #endif
 
@@ -25,7 +25,7 @@
 #endif
 
 #if __has_include(<windows.h>)
-#pragma message "is windows-y"
+#pragma message("is windows-y")
 #include <windows.h>
 #endif
 
