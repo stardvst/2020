@@ -1,44 +1,47 @@
 #include <iostream>
+#include <functional>
+#include <type_traits>
+
+template <typename L1, typename L2>
+struct S : L1, L2
+{
+	S(L1 l1, L2 l2)
+		: L1(std::move(l1))
+		, L2(std::move(l2))
+	{
+	}
+
+	// dispatch to appropriate operator() depending on what's passed
+	using L1::operator();
+	using L2::operator();
+};
+
+//template <typename L1, typename L2>
+//auto makeCombined(L1 &&l1, L2 &&l2)
+//{
+//	return S<std::decay_t<L1>, std::decay_t<L2>>
+//		(std::forward<L1>(l1), std::forward<L2>(l2));
+//}
 
 int main()
 {
-	int i = 1;
-	auto l = [i]
+	auto l = []()
 	{
-		return i;
+		return 4;
 	};
 
-	auto l2 = [&i]
+	auto l2 = [](int i)
 	{
-		return ++i;
+		return 10 * i;
 	};
 
-	auto l3 = [i]() mutable
-	{
-		return ++i;
-	};
+	// combined l(4), combined l()
 
-	// c++14, stateful lambda
-	auto l4 = [counter = 0]() mutable
-	{
-		return ++counter;
-	};
-	l4();
-	l4();
+	//auto combined = makeCombined(l, l2);
 
-	// Fibonacci sequence, probably fastest way
-	auto l5 = [a1 = 0, a2 = 1]() mutable
-	{
-		a1 = std::exchange(a2, a1 + a2);
-		return a1;
-	};
+	// c++17 automatic class type deduction
+	auto combined = S(l, l2);
 
-	std::cout << l() << '\n';
-	std::cout << l2() << '\n';
-	std::cout << l3() << '\n';
-	std::cout << l4() << '\n';
-
-	std::cout << "Fibonacci sequence: ";
-	for (auto i = 0; i < 6; ++i)
-		std::cout << l5() << ' ';
+	std::cout << combined() << '\n';
+	std::cout << combined(4) << '\n';
 }
