@@ -1,13 +1,16 @@
 #include <iostream>
 #include <functional>
 #include <type_traits>
+#include <variant>
+#include <array>
+#include <string>
 
 template <typename ...L>
-struct S : L...
+struct Visitor : L...
 {
 	// to make it work with perfect forwarding
 	template <typename ...T>
-	S(T &&...ls)
+	Visitor(T &&...ls)
 		: L(std::forward<T>(ls))...
 	{
 	}
@@ -21,7 +24,7 @@ struct S : L...
 // and class template type deduction cannot work, so adding guide
 // decay_t to get the underlying type, not & or && or whatever
 template <typename ...T>
-S(T...)->S<std::decay_t<T>...>;
+Visitor(T...)->Visitor<std::decay_t<T>...>;
 
 //template <typename L1, typename L2>
 //auto makeCombined(L1 &&l1, L2 &&l2)
@@ -32,32 +35,33 @@ S(T...)->S<std::decay_t<T>...>;
 
 int main()
 {
-	auto l = []()
+	std::array<std::variant<double, int, char, std::string>, 3> vars{ 3.5, 2, "Hello World" };
+	int intTotal = 0;
+	double dblTotal = 0.0;
+
+	Visitor visitor{
+		[&intTotal](const int i)
 	{
-		return 4;
-	};
-
-	auto l2 = [](int i)
-	{
-		return 10 * i;
-	};
-
-	// combined l(4), combined l()
-
-	//auto combined = makeCombined(l, l2);
-
-	// c++17 automatic class type deduction
-	auto combined = S(l, l2,
-		[](double d)
-	{
-		return d * 3.2;
+		intTotal += i;
 	},
-		// with use of forwarding passing non-copyable lambda
-		[i = std::make_unique<int>(5)](char c)
+		[&dblTotal](const double d)
 	{
+		dblTotal += d;
+	},
+		[](const char c)
+	{
+	},
+		[](const std::string &s)
+	{
+	}
+	};
+
+	std::for_each(std::begin(vars), std::end(vars),
+		[&visitor](const auto &v)
+	{
+		std::visit(visitor, v);
 	});
 
-	std::cout << combined() << '\n';
-	std::cout << combined(4) << '\n';
-	std::cout << combined(3.5) << '\n';
+	std::cout << "int total: " << intTotal << '\n';
+	std::cout << "double total: " << dblTotal << '\n';
 }
