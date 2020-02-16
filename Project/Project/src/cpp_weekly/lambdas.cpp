@@ -2,19 +2,26 @@
 #include <functional>
 #include <type_traits>
 
-template <typename L1, typename L2>
-struct S : L1, L2
+template <typename ...L>
+struct S : L...
 {
-	S(L1 l1, L2 l2)
-		: L1(std::move(l1))
-		, L2(std::move(l2))
+	// to make it work with perfect forwarding
+	template <typename ...T>
+	S(T &&...ls)
+		: L(std::forward<T>(ls))...
 	{
 	}
 
 	// dispatch to appropriate operator() depending on what's passed
-	using L1::operator();
-	using L2::operator();
+	// with this variadic using declaration
+	using L::operator()...;
 };
+
+// constructor of S has different parameter pack than the struct
+// and class template type deduction cannot work, so adding guide
+// decay_t to get the underlying type, not & or && or whatever
+template <typename ...T>
+S(T...)->S<std::decay_t<T>...>;
 
 //template <typename L1, typename L2>
 //auto makeCombined(L1 &&l1, L2 &&l2)
@@ -40,8 +47,17 @@ int main()
 	//auto combined = makeCombined(l, l2);
 
 	// c++17 automatic class type deduction
-	auto combined = S(l, l2);
+	auto combined = S(l, l2,
+		[](double d)
+	{
+		return d * 3.2;
+	},
+		// with use of forwarding passing non-copyable lambda
+		[i = std::make_unique<int>(5)](char c)
+	{
+	});
 
 	std::cout << combined() << '\n';
 	std::cout << combined(4) << '\n';
+	std::cout << combined(3.5) << '\n';
 }
