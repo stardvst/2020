@@ -35,33 +35,42 @@ Visitor(T...)->Visitor<std::decay_t<T>...>;
 
 int main()
 {
-	std::array<std::variant<double, int, char, std::string>, 3> vars{ 3.5, 2, "Hello World" };
+	std::array<std::variant<double, int>, 2> vars{ 3.5, 2 };
 	int intTotal = 0;
 	double dblTotal = 0.0;
+	std::common_type_t<decltype(intTotal), decltype(dblTotal)> grandTotal = 0;
 
+	// there's no way to share variables between lambdas other than capturing
 	Visitor visitor{
-		[&intTotal](const int i)
+		[&intTotal, &grandTotal](const int i)
 	{
 		intTotal += i;
+		grandTotal += i;
 	},
-		[&dblTotal](const double d)
+		[&dblTotal, &grandTotal](const double d)
 	{
 		dblTotal += d;
-	},
-		[](const char c)
-	{
-	},
-		[](const std::string &s)
-	{
+		grandTotal += d;
 	}
 	};
 
-	std::for_each(std::begin(vars), std::end(vars),
-		[&visitor](const auto &v)
+	auto genericVisitor = [&intTotal, &dblTotal, &grandTotal](const auto &v)
 	{
-		std::visit(visitor, v);
+		grandTotal += v;
+
+		if constexpr (std::is_same_v<std::decay_t<decltype(v)>, double>)
+			dblTotal += v;
+		else
+			intTotal += v;
+	};
+
+	std::for_each(std::begin(vars), std::end(vars),
+		[&genericVisitor](const auto &v)
+	{
+		std::visit(genericVisitor, v);
 	});
 
 	std::cout << "int total: " << intTotal << '\n';
 	std::cout << "double total: " << dblTotal << '\n';
+	std::cout << "grand total: " << grandTotal << '\n';
 }
