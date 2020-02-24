@@ -2,12 +2,13 @@
 #include <algorithm>
 
 template <typename First, typename ...T>
-decltype(auto) variadicFMin(const First &f, const T &...t)
+auto variadicFMin(const First &f, const T &...t)
 {
 	static_assert((std::is_same_v<First, T> && ...));
 	First retVal = f;
-	((retVal = std::fmin(retVal, t)), ...);
-	return retVal;
+	std::initializer_list<First> lst{(retVal = std::fmin(retVal, t))...};
+	return *lst.begin();
+	//return *std::next(lst.begin(), 1);
 }
 
 int main()
