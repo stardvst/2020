@@ -13,6 +13,23 @@ struct Compare
 	{
 		return lhs.key < rhs.key;
 	}
+
+	// transparent comparator, i.e. doesn't have to compare with MyData,
+	// can be any other type
+	template <typename T>
+	bool operator()(const MyData &lhs, const T &str) const
+	{
+		return lhs.key < str;
+	}
+
+	template <typename T>
+	bool operator()(const T &str, const MyData &rhs) const
+	{
+		return str < rhs.key;
+	}
+
+	// activate transparent comparators
+	using is_transparent = int;
 };
 
 int main()
@@ -44,4 +61,12 @@ int main()
 	{
 		return lhs.key < rhs.key;
 	});
+
+	std::set<MyData, Compare> set3;
+	set3.insert(MyData{ "Bob" });
+
+	const auto count1 = set3.count(MyData{ "Bob" }); // have to create an object
+
+	// works only with overloads
+ 	auto count2 = set3.count(std::string("Bob"));
 }
