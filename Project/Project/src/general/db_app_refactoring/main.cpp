@@ -8,9 +8,10 @@ int main()
 	{
 		FileDB database;
 		database.setStore(App::getStorageFile());
+		FileDBAdapter databaseAdapter{ database };
 
 		App::setStorageFile("db.txt");
-		App app(database);
+		App app(databaseAdapter);
 		app.launch();
 	}
 	catch (const std::exception &ex)

@@ -53,14 +53,13 @@ private:
 class App
 {
 public:
-	App(FileDB &database);
+	App(FileDBAdapter &databaseAdapter);
 	void launch();
 
 	static void setStorageFile(const std::string &storePath);
 	static const std::string &getStorageFile();
 
 private:
-	FileDBAdapter m_databaseAdapter;
 	UI m_ui;
 	static inline std::string s_storePath;
 };

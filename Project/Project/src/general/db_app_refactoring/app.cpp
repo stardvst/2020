@@ -52,9 +52,8 @@ void UI::addButtons()
 
 //////////////////////////////////////////////////////////////////////////
 
-App::App(FileDB &database)
-	: m_databaseAdapter(database)
-	, m_ui(m_databaseAdapter)
+App::App(FileDBAdapter &databaseAdapter)
+	: m_ui(databaseAdapter)
 {
 }
 
