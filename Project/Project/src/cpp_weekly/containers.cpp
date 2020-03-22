@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 
 struct S
@@ -23,6 +24,7 @@ struct S
 int main()
 {
 	std::vector<S> vec;
+	std::cout << "initial capacity: " << vec.capacity() << '\n';
 
 	// S(int), S(&&), ~S(), ~S()
 	// while moves are cheap, they're not as cheap as creating object in-place!
@@ -30,4 +32,17 @@ int main()
 
 	// S(int), ~S()
 	vec.emplace_back(3);
+	std::cout << "capacity after emplace_back: " << vec.capacity() << '\n';
+
+	// without noexcept, these will result in COPIES,
+	// but with noexcept we're telling that objects can be moved
+	// while maintaining strong exception guarantee!
+	vec.emplace_back(3);
+	std::cout << "capacity after emplace_back: " << vec.capacity() << '\n';
+	vec.emplace_back(3);
+	std::cout << "capacity after emplace_back: " << vec.capacity() << '\n';
+	vec.emplace_back(3);
+	std::cout << "capacity after emplace_back: " << vec.capacity() << '\n';
+	vec.emplace_back(3);
+	std::cout << "capacity after emplace_back: " << vec.capacity() << '\n';
 }
