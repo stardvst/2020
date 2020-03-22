@@ -1,67 +1,33 @@
-#include <string>
-#include <set>
+#include <vector>
 
-struct Person
+struct S
 {
-	std::string name;
-};
+	S() { puts("S()"); }
+	S(int) { puts("S(int)"); }
+	~S() { puts("~S()"); }
 
-template <typename Type, typename Comparator>
-auto makeSet(Comparator &&comparator)
-{
-	return std::set<Type, std::decay_t<Comparator>>{
-		std::forward<Comparator>(comparator)};
-}
+	S(const S &) { puts("S(const S &)"); }
+	S(S &&) noexcept { puts("S(S &&)"); }
 
-template <typename Type, typename ...Comparator>
-auto makeSetVar(Comparator &&...comparator)
-{
-	// need to expand parameter pack, inherit from all comparators
-	struct Compare : std::decay_t<Comparator>...
+	S &operator=(const S &)
 	{
-		// pull call operators from all comparators
-		using std::decay_t<Comparator>::operator()...;
-		using is_transparent = int;
+		puts("S &operator=(const S &)"); return *this;
+	}
 
-		// cannot have member template in local class,
-		// so we'll pass compare object to set ctor
-		//template <typename ...T>
-		//Compare(T &&...t)
-		//{
-		//}
-	};
-	return std::set<Type, Compare>{Compare{ std::forward<Comparator>(comparator)... }};
-}
+	S &operator=(S &&) noexcept
+	{
+		puts("S &operator=(S &&)"); return *this;
+	}
+};
 
 int main()
 {
-	auto comparator1 = [](const Person &lhs, const Person &rhs)
-	{
-		return lhs.name < rhs.name;
-	};
+	std::vector<S> vec;
 
-	std::set<Person, decltype(comparator1)> set{ std::move(comparator1) };
+	// S(int), S(&&), ~S(), ~S()
+	// while moves are cheap, they're not as cheap as creating object in-place!
+	//vec.push_back(S(1));
 
-	// make set
-	auto set1 = makeSet<Person>([](const Person &lhs, const Person &rhs)
-	{
-		return lhs.name < rhs.name;
-	});
-
-	// make set variadic
-	auto set2 = makeSetVar<Person>(
-		[](const Person &lhs, const Person &rhs)
-	{
-		return lhs.name < rhs.name;
-	},
-		[](const Person &lhs, const auto &rhs)
-	{
-		return lhs.name < rhs;
-	},
-		[](const auto &lhs, const Person &rhs)
-	{
-		return lhs < rhs.name;
-	});
-
-	const auto count = set2.count("Bob");
+	// S(int), ~S()
+	vec.emplace_back(3);
 }
