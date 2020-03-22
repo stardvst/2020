@@ -27,7 +27,7 @@ std::vector<std::string> FileDB::load(const std::string &dbName)
 
 //////////////////////////////////////////////////////////////////////////
 
-UI::UI(FileDBAdapter &databaseAdapter) : m_database(databaseAdapter)
+UI::UI(Database &database) : m_database(database)
 {
 }
 
@@ -52,10 +52,10 @@ void UI::addButtons()
 
 //////////////////////////////////////////////////////////////////////////
 
-App::App()
-	: m_ui(m_databaseAdapter)
+App::App(FileDB &database)
+	: m_databaseAdapter(database)
+	, m_ui(m_databaseAdapter)
 {
-	m_database.setStore(App::getStorageFile());
 }
 
 void App::launch()

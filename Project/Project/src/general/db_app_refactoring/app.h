@@ -38,7 +38,7 @@ struct FileDBAdapter : Database
 class UI
 {
 public:
-	UI(FileDBAdapter &database_adapter);
+	UI(Database &database);
 
 	void showLogin();
 
@@ -53,15 +53,14 @@ private:
 class App
 {
 public:
-	App();
+	App(FileDB &database);
 	void launch();
 
 	static void setStorageFile(const std::string &storePath);
 	static const std::string &getStorageFile();
 
 private:
-	FileDB m_database;
-	FileDBAdapter m_databaseAdapter{ m_database };
+	FileDBAdapter m_databaseAdapter;
 	UI m_ui;
 	static inline std::string s_storePath;
 };

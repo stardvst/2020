@@ -6,8 +6,11 @@ int main()
 {
 	try
 	{
+		FileDB database;
+		database.setStore(App::getStorageFile());
+
 		App::setStorageFile("db.txt");
-		App app;
+		App app(database);
 		app.launch();
 	}
 	catch (const std::exception &ex)
