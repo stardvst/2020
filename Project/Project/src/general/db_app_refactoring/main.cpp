@@ -2,15 +2,17 @@
 
 #include "app.h"
 
-int main()
+int main(int argc, char **argv)
 {
+	std::vector<std::string> args(argv + 1, argv + argc);
+	if (args.empty())
+		args.emplace_back("db.txt");
 	try
 	{
 		FileDB database;
-		database.setStore(App::getStorageFile());
+		database.setStore(args[0]);
 		FileDBAdapter databaseAdapter{ database };
 
-		App::setStorageFile("db.txt");
 		App app(databaseAdapter);
 		app.launch();
 	}

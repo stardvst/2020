@@ -56,10 +56,6 @@ public:
 	App(FileDBAdapter &databaseAdapter);
 	void launch();
 
-	static void setStorageFile(const std::string &storePath);
-	static const std::string &getStorageFile();
-
 private:
 	UI m_ui;
-	static inline std::string s_storePath;
 };

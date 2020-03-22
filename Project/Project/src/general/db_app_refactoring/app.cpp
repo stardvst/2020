@@ -62,15 +62,3 @@ void App::launch()
 	std::cout << __FUNCTION__ << '\n';
 	m_ui.showLogin();
 }
-
-void App::setStorageFile(const std::string &storePath)
-{
-	std::cout << __FUNCTION__ << ' ' << storePath << '\n';
-	s_storePath = storePath;;
-}
-
-const std::string &App::getStorageFile()
-{
-	std::cout << __FUNCTION__ << '\n';
-	return s_storePath;
-}
