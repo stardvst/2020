@@ -27,11 +27,7 @@ std::vector<std::string> FileDB::load(const std::string &dbName)
 
 //////////////////////////////////////////////////////////////////////////
 
-#if !CHANGE_DATABASE_TO_REFERENCE
-UI::UI(FileDB &database) : m_database(database)
-#else
 UI::UI(FileDBAdapter &databaseAdapter) : m_database(databaseAdapter)
-#endif
 {
 }
 
@@ -57,11 +53,7 @@ void UI::addButtons()
 //////////////////////////////////////////////////////////////////////////
 
 App::App()
-#if !CHANGE_PARAMETER_TO_ADAPTER
-	: m_ui(database)
-#else
 	: m_ui(m_databaseAdapter)
-#endif
 {
 	m_database.setStore(App::getStorageFile());
 }
