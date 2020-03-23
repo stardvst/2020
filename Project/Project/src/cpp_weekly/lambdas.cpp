@@ -1,30 +1,23 @@
-#include <string>
-#include <functional>
+#include <iostream>
+#include <array>
 
 int main()
 {
-	// lambdas can be converted into function pointers
-	// it must be non-capturing lambda (which has state)
-	std::vector<std::function<int(int, int)>> functions1;
-	functions1.emplace_back([](int i, int j)
-	{
-		return i + j;
-	});
-	functions1.emplace_back([](int i, int j)
-	{
-		return i - j;
-	});
+	auto l = [val = 2]{ return val; };
 
-	// above has overhead for generating type erasure, instead take
-	// advantage of lambda to function pointer conversion.
-	// in this case less code is generated
-	std::vector<int (*)(int, int)> functions2;
-	functions2.emplace_back([](int i, int j)
+	// cannot access private member declared in class
+	// 'main::<lambda_7353eea49db4595be34d9f57d4c82dc6>'
+	// l.val = 4;
+
+	std::cout << l() << '\n';
+
+	std::array arr = { 1, 2, 3, 4, 5 };
+	int sum = 0;
+	for (const auto &v : arr)
 	{
-		return i + j;
-	});
-	functions2.emplace_back([](int i, int j)
-	{
-		return i - j;
-	});
+		sum += v;
+		//++__for_begin;
+	}
+
+	std::cout << sum << '\n';
 }
