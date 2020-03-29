@@ -1,0 +1,13 @@
+git clone https://github.com/Microsoft/vcpkg.git module/
+cd module
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install fmt
+
+mkdir bin && cd bin
+
+# use path provided by "./vcpkg integrate install" command as ROOT
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$ROOT/module/scripts/buildsystems/vcpkg.cmake
+make VERBOSE=1
+./fmp_example
+# lld ./fmp_example
