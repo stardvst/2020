@@ -1,0 +1,7 @@
+mkdir huntergate
+wget https://raw.githubusercontent.com/cpp-pm/gate/master/cmake/HunterGate.cmake -O huntergate/HunterGate.cmake
+mkdir bin && cd bin
+ccmake ..
+make VERBOSE=1
+./fmp_example
+# lld ./fmp_example
