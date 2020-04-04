@@ -1,27 +1,20 @@
 #include <iostream>
 #include <optional>
-#include <variant>
-
-constexpr std::optional<int> getValue1()
-{
-	// operator= is constexpr => can be called from function
-	std::optional<int> val = 1;
-	val = 3;
-	return val;
-}
-
-constexpr std::variant<int, double> getValue2()
-{
-	std::variant<int, double> val = 1;
-	// val = 3; // no operator=(T &&) is constexpr
-	return val;
-}
+#include <vector>
+#include <any>
 
 int main()
 {
-	constexpr auto val1 = getValue1();
-	std::cout << *val1 << '\n';
+	// generated more code
+	std::vector<int> vec(3, 3);
+	std::optional<std::vector<int>> o1(std::move(vec));
 
-	constexpr auto val2 = getValue2();
-	std::cout << std::get<int>(val2) << '\n';
+	// another option
+	std::optional<std::vector<int>> o2(std::vector<int>(3, 3));
+
+	// another option, call vector ctor in-place; better than move
+	std::optional<std::vector<int>> o3(std::in_place, 3, 3);
+	std::optional<std::vector<int>> o4(std::in_place, { 1, 2, 3 });
+
+	std::any a(std::in_place_type_t<std::vector<int>>{}, 3, 3);
 }
