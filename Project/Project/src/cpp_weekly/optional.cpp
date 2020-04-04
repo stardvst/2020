@@ -1,31 +1,27 @@
 #include <iostream>
 #include <optional>
+#include <variant>
 
-// std::optional will not do dynamic allocation on its own
-
-struct S
+constexpr std::optional<int> getValue1()
 {
-	S() = default;
-	S(const S &) = delete;
-	S(S &&) = delete;
-};
+	// operator= is constexpr => can be called from function
+	std::optional<int> val = 1;
+	val = 3;
+	return val;
+}
+
+constexpr std::variant<int, double> getValue2()
+{
+	std::variant<int, double> val = 1;
+	// val = 3; // no operator=(T &&) is constexpr
+	return val;
+}
 
 int main()
 {
-	std::optional<int> io;
-	std::cout << sizeof(io) << '\n'; // 8, size of int + its holder (pointer?)
+	constexpr auto val1 = getValue1();
+	std::cout << *val1 << '\n';
 
-	//std::cout << io.value(); // crash, value not set
-	std::cout << io.value_or(2) << '\n';
-
-	std::optional<std::string> so;
-	so = "Hello"; // assigns to empty values, assignment to optional
-	so = "World!"; // calls assignment operator on int, i.e. to the thing that optional contains
-	std::cout << so.value() << '\n';
-
-	so = std::string("Hello"); // move assignment
-
-	std::optional<S> o;
-	// o = S(); // compile error, no move/copy ctor available
-	o.emplace(); // instead, constructs in place, no move/copy needed
+	constexpr auto val2 = getValue2();
+	std::cout << std::get<int>(val2) << '\n';
 }
