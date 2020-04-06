@@ -1,50 +1,32 @@
 #include <iostream>
-#include <array>
+#include <vector>
 
 int main()
 {
-	auto l = [i = 10]{ return i; };
-	std::cout << l() << '\n';
-
-	// lambda capture can be any expression
-	// lambda is expression => capture can be lambda
-	auto l2 = [i = [] { return 10; }]
+	auto l1 = [](auto first, auto second)
 	{
-		return i;
+		return first + second;
 	};
 
-	// invoke lambda returned from lambda
-	std::cout << l2()() << '\n';
+	std::cout << l1(2, 4) << '\n';
+	std::cout << l1(2.1, 4.9) << '\n';
 
-	// capture type
-	auto l3 = [i = []
+	// same as above because auto uses the same rules
+	// as template type deduction
+	auto l2 = []<typename T>(T first, T second)
 	{
-		struct S
-		{
-			int val = 10;
-			S()
-			{
-				puts("S()");
-			}
-			S(const S &)
-			{
-				puts("S(const S &)");
-			}
-			~S()
-			{
-				puts("~S()");
-			}
-		};
-		return S{};
-	}()]
-	{
-		return i;
+		return first + second;
 	};
 
-	// lambda returns object
-	//std::cout << l3().val << '\n';
+	std::cout << l2(2, 4) << '\n';
+	//std::cout << l2(2, 4.5) << '\n'; // doesn't work
+	//std::cout << l2(2.1, 4) << '\n'; // doesn't work
 
-	// lambdas are objects with lifetimes
-	// copying lambda => copies all of its captures
-	//auto l4 = l3;
+	auto l3 = []<typename T>(const std::vector<T> &v)
+	{
+		return v.size();
+	};
+
+	std::vector<int> vec{ 1, 2, 3, 4 };
+	std::cout << l3(vec) << '\n';
 }
