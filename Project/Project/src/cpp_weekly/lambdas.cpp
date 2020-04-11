@@ -1,67 +1,40 @@
 #include <iostream>
-#include <typeinfo>
+#include <variant>
+#include <type_traits>
 
-struct __main_lambda_0
+template <typename ...Base>
+struct Visitor : Base...
 {
-	constexpr auto operator()() const
-	{
-		return 5;
-	}
+	// no need for ctor, no need to worry whether all bases are
+	// move constructible, thanks to c++17 aggregate initialization
+	// of base classes, and behavior is exactly the same
+	// to make it work with perfect forwarding
+
+	//template <typename ...T>
+	//constexpr Visitor(T &&...t) noexcept(
+	//	(std::is_nothrow_move_constructible_v<Base> && ...)
+	//	) : Base{ std::forward<T>(t) }...
+	//{
+	//}
+
+	// dispatch to appropriate operator() depending on what's passed
+	// with this variadic using declaration
+	using Base::operator()...;
 };
 
-struct __main_lambda_1
-{
-	constexpr auto operator()(int i) const
-	{
-		return 5 + i;
-	}
-};
-
-struct __main_lambda_2
-{
-	int val;
-	constexpr auto operator()(int i) const
-	{
-		return 5 + i + val;
-	}
-};
-
-struct __main_lambda_3
-{
-	int val;
-	constexpr auto operator()(int i)
-	{
-		return 5 + i + ++val;
-	}
-};
-
-struct __main_lambda_4
-{
-	int val;
-
-	template <typename T>
-	constexpr auto operator()(T i)
-	{
-		return 5 + i + ++val;
-	}
-};
+// constructor of S has different parameter pack than the struct
+// and class template type deduction cannot work, so adding guide
+// decay_t to get the underlying type, not & or && or whatever
+template <typename ...T>
+Visitor(T...)->Visitor<T...>;
 
 int main()
 {
-	auto l0 = []() { return 5; };
-	puts(typeid(l0).name());
+	constexpr Visitor visitor{
+		[](double d) -> int { return d + 3.4; },
+		[](int i) -> int { return i - 2; }
+	};
 
-	auto l1 = [](int i) { return 5 + i; };
-	puts(typeid(l1).name());
-
-	// can't mutate val
-	int val = 10;
-	auto l2 = [val](int i) { return 5 + i + val; };
-	puts(typeid(l2).name());
-
-	auto l3 = [val](int i) mutable { return 5 + i + ++val; };
-	puts(typeid(l3).name());
-
-	auto l4 = [val](auto i) mutable { return 5 + i + ++val; };
-	puts(typeid(l4).name());
+	constexpr auto v = std::variant<double, int>{ 9.0 };
+	std::cout << std::visit(visitor, v) << '\n';
 }
