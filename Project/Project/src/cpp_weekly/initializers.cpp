@@ -1,54 +1,47 @@
-struct S1
+#include <iostream>
+
+struct S
 {
 	int i;
-	float f;
+	unsigned int j;
 };
 
-struct S2
+template <typename T>
+struct ST
 {
-	int i;
-	float f;
-	double d;
-
-	// warning
-	/*S() : d(1.0), i(2)
+	ST(T i1, int j1)
+		: i(i1), j(j1)
 	{
-	}*/
-};
+	}
 
-struct Parameters
-{
-	int i;
-	float f;
-	double d;
+	T i;
+	unsigned int j;
 };
-
-void useParams(Parameters p)
-{
-}
 
 int main()
 {
-	// either all initializer clauses should be designated or
-	// none of them should be
-	//S1 s1{ .i = 1, 3.4 };
+	//auto value1 = S{ .i{1}, .j = 2 }; // cannot do
 
-	S1 s2{ .i = 1, .f = 3.4 };
+	// even though braced-init is not allowed, it is more
+	// equivalent to braced-init not allowed implicit conversions
+	//auto value2 = S{ .i = 1, .j = -2 };
 
-	// missing initializer for member 'S1::i'
-	// must appear in the same order as the data members
-	//S1 s3{ .f = 3.4, .i = 1 };
+	auto value3 = S{ .i = 1, .j = 2 };
+	std::cerr << value3.j << '\n';
 
-	// missing initializer for member 'S::d'
-	//S2 s4{ .i = 1, .f = 3.4 };
+	auto value4 =
+	S{
+		.i = []() { return 1; }(),
+		.j = 2
+	};
+	std::cerr << value4.i << '\n';
 
-	// missing initializer for member 'S::f'
-	//S2 s5{ .i = 1, .d = 3.4 };
-
-	// missing initializer for member 'S2::f'
-	//S2 s6{ .i = 1, .d = 3.4 };
-
-	// can we leave the type off completely?
-	useParams(Parameters{ .i = 3, .d = 4.5 });
-	useParams({ .i = 3, .d = 4.5 });
+	// ST must have constructor for deducing types,
+	// even if we add one, it won't work with designated initializers
+	auto value5 =
+		ST<int>{
+		/*.i = */[]() { return 1; }(),
+		/*.j = */2
+	};
+	std::cerr << value5.i << '\n';
 }
