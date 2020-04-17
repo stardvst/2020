@@ -1,23 +1,10 @@
 #include <iostream>
 
-// not standard, compiler-specific
-#ifndef _MSC_VER
-__attribute__((always_inline))
-#endif
-int add1(int i, int j)
-{
-	return i + j;
-}
+[[gnu::pure]] int square(int i);
 
-// c++14 standard, portable!
-[[msvc::always_inline]] [[gnu::always_inline]] int add2(int i, int j)
+int main(int argc, const char *[])
 {
-	return i + j;
-}
-
-int main()
-{
-	std::cout << add1(1, 2) << '\n';
-	std::cout << add2(1, 2) << '\n';
+	// since squre() is pure, it will be called once, then multiplied by 2!
+	std::cout << square(argc) + square(argc) << '\n';
 }
 
