@@ -1,40 +1,34 @@
 #include <iostream>
-#include <variant>
-#include <type_traits>
+#include <memory>
+#include <cstdio>
 
-template <typename ...Base>
-struct Visitor : Base...
-{
-	// no need for ctor, no need to worry whether all bases are
-	// move constructible, thanks to c++17 aggregate initialization
-	// of base classes, and behavior is exactly the same
-	// to make it work with perfect forwarding
-
-	//template <typename ...T>
-	//constexpr Visitor(T &&...t) noexcept(
-	//	(std::is_nothrow_move_constructible_v<Base> && ...)
-	//	) : Base{ std::forward<T>(t) }...
-	//{
-	//}
-
-	// dispatch to appropriate operator() depending on what's passed
-	// with this variadic using declaration
-	using Base::operator()...;
-};
-
-// constructor of S has different parameter pack than the struct
-// and class template type deduction cannot work, so adding guide
-// decay_t to get the underlying type, not & or && or whatever
-template <typename ...T>
-Visitor(T...)->Visitor<T...>;
+// topics covered:
+// 1. default constructible lambdas
+// 2. assignable lambdas
+// 3. lambdas in unevaluated context
 
 int main()
 {
-	constexpr Visitor visitor{
-		[](double d) -> int { return d + 3.4; },
-		[](int i) -> int { return i - 2; }
-	};
+	auto l = [] { return 5; };
+	auto m = l; // copy of lambda, same type, c++17
+	l = m; // operator= is deleted in c++17, works in c++20
 
-	constexpr auto v = std::variant<double, int>{ 9.0 };
-	std::cout << std::visit(visitor, v) << '\n';
+	decltype(l) k; // lambda of above type, c++20
+	(void)k();
+
+	decltype([] {}) n; // lambda in unevaluated context error in c++17
+
+	// c++17
+	auto deleter = [](FILE *f) { fclose(f); };
+	auto file17 = std::unique_ptr<FILE, decltype(deleter)>(
+		fopen("a.txt", "w"), deleter);
+
+	// c++20
+	// lambdas are default constructible, no need to pass
+	// lambdas in unevaluated context can be used
+	auto file20 = std::unique_ptr <
+		FILE,
+		decltype([](FILE *f) { fclose(f); }) > (
+			fopen("a.txt", "w")
+			);
 }
