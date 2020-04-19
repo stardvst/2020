@@ -1,11 +1,18 @@
 #include <iostream>
 #include <memory>
 #include <cstdio>
+#include <set>
 
 // topics covered:
 // 1. default constructible lambdas
 // 2. assignable lambdas
 // 3. lambdas in unevaluated context
+
+struct MyData
+{
+	std::string key;
+	std::string value;
+};
 
 int main()
 {
@@ -31,4 +38,10 @@ int main()
 		decltype([](FILE *f) { fclose(f); }) > (
 			fopen("a.txt", "w")
 			);
+
+	// 3. lambdas in unevaluated context
+	std::set < MyData, decltype([](const MyData &lhs, const MyData &rhs)
+	{
+		return lhs.key < rhs.key;
+	}) > set2;
 }
