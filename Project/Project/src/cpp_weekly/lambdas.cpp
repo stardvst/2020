@@ -1,47 +1,65 @@
 #include <iostream>
-#include <memory>
-#include <cstdio>
-#include <set>
 
-// topics covered:
-// 1. default constructible lambdas
-// 2. assignable lambdas
-// 3. lambdas in unevaluated context
+// #1: name 'fib' cannot be used before it is initialized
+//constexpr auto fib = [](int input)
+//{
+//	if (input < 2)
+//		return input;
+//	return fib(input - 1) + fib(input - 2);
+//};
 
-struct MyData
+// #2
+constexpr auto fib = [](const auto fib, int input)
 {
-	std::string key;
-	std::string value;
+	if (input < 2)
+		return 1;
+	return fib(fib, input - 1) + fib(fib, input - 2);
+};
+
+// #3
+constexpr auto fibBase = [](const auto fib, int input)
+{
+	if (input < 2)
+		return 1;
+	return fibBase(fibBase, input - 1) + fibBase(fibBase, input - 2);
+};
+
+constexpr auto fibRec = [](int input)
+{
+	return fibBase(fibBase, input);
+};
+
+// #4
+constexpr auto fibRec2 = [](int input)
+{
+	auto fibLocal = [](const auto fibParam, int input)
+	{
+		if (input < 2)
+			return 1;
+		return fibParam(fibParam, input - 1) + fibParam(fibParam, input - 2);
+	};
+	return fibLocal(fibLocal, input);
+};
+
+// #5: mutually exclusive recursive lambdas
+auto fibMutExcl1 = [](const auto f1, const auto f2, int input)
+{
+	if (input < 2)
+		return 1;
+	return input + f2(f1, f2, input - 1);
+};
+
+auto fibMutExcl2 = [](const auto f1, const auto f2, int input)
+{
+	if (input < 2)
+		return 1;
+	return input + f1(f1, f2, input - 1);
 };
 
 int main()
 {
-	auto l = [] { return 5; };
-	auto m = l; // copy of lambda, same type, c++17
-	l = m; // operator= is deleted in c++17, works in c++20
-
-	decltype(l) k; // lambda of above type, c++20
-	(void)k();
-
-	decltype([] {}) n; // lambda in unevaluated context error in c++17
-
-	// c++17
-	auto deleter = [](FILE *f) { fclose(f); };
-	auto file17 = std::unique_ptr<FILE, decltype(deleter)>(
-		fopen("a.txt", "w"), deleter);
-
-	// c++20
-	// lambdas are default constructible, no need to pass
-	// lambdas in unevaluated context can be used
-	auto file20 = std::unique_ptr <
-		FILE,
-		decltype([](FILE *f) { fclose(f); }) > (
-			fopen("a.txt", "w")
-			);
-
-	// 3. lambdas in unevaluated context
-	std::set < MyData, decltype([](const MyData &lhs, const MyData &rhs)
-	{
-		return lhs.key < rhs.key;
-	}) > set2;
+	std::cout << fib(fib, 3) << '\n';
+	std::cout << fibRec(3) << '\n';
+	std::cout << fibRec2(3) << '\n';
+	std::cout << fibMutExcl1(fibMutExcl1, fibMutExcl2, 3) / 2 << '\n';
 }
