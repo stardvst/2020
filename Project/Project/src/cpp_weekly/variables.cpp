@@ -1,21 +1,27 @@
 #include <iostream>
 
-int f(int param)
+struct S
 {
-	int i = param;
-	int sum = 0;
+	const static std::string s1;
 
-	// define new variable
-	for (int i = param; i > 0; --i)
+	// comes with cost, a check guard
+	inline const static std::string s2 = "Hello World";
+
+	// cheapest way is this:
+	// 1. not constructing a std::string
+	// 2. no static initialization
+	// 3. no locks, guards
+	// 4. taking advantage of std::string_view
+	constexpr static std::string_view s()
 	{
-		int sum = 5; // define new variable
-		sum += i; // adds i to sum local to for loop, oops
+		// guaranteed for life of program
+		return "Hello World";
 	}
+};
 
-	return sum;
-}
+// give compiler place and time to initialize it
+const std::string S::s1 = "Hello World";
 
 int main()
 {
-	std::cout << f(5) << '\n'; // 0
 }
