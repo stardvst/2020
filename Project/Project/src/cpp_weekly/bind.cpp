@@ -2,6 +2,42 @@
 #include <functional>
 #include <utility>
 
+// for objects
+template <
+	typename Class,
+	typename Ret,
+	typename ...Param,
+	typename Obj,
+	typename ...Args
+>
+auto invoke(Ret (Class::*func)(Param...) const noexcept,
+	Obj &&obj,
+	Args &&...args)
+{
+	return (std::forward<Obj>(obj).*func)(std::forward<Args>(args)...);
+}
+
+// free function
+template <
+	typename Ret,
+	typename ...Param,
+	typename ...Args
+>
+auto invoke(Ret(*func)(Param...),
+	Args &&...args)
+{
+	return (func)(std::forward<Args>(args)...);
+}
+
+template <
+	typename Callable,
+	typename ...Param
+>
+auto invoke(Callable &&callable, Param &&...param)
+{
+	return callable(param...);
+}
+
 template <typename Func, typename ...Params>
 auto bind_front(Func &&f, Params &&...params)
 {
@@ -10,7 +46,7 @@ auto bind_front(Func &&f, Params &&...params)
 		...boundParams = std::forward<Params>(params)]
 		(auto &&... restParams) -> decltype(auto) // perfect returning
 	{
-		return f(boundParams...,
+		return invoke(f, boundParams...,
 			std::forward<decltype(restParams)>(restParams)...);
 	};
 }
@@ -23,9 +59,11 @@ int add(int i, int j, int k)
 
 int main()
 {
-	// binds first two arguments
-	auto func = bind_front(&add, 1, 2);
+	// without ::, due to ADL, std version is also available => ambuguity!
+	std::string s;
+	auto func = ::bind_front(&std::string::size, s);
+	std::cout << func() << '\n';
 
-	// bind the 3rd argument
-	std::cout << func(3);
+	auto ret = bind_front(&add, 1, 2);
+	std::cout << ret(3);
 }
