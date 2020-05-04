@@ -1,22 +1,17 @@
 #include <iostream>
 #include <string>
 
-std::size_t length(const std::string &s)
-{
-	return s.size();
-}
-
-std::size_t length_view(const std::string_view &s)
-{
-	return s.size();
-}
-
 int main()
 {
-	// creates string, but do we it to?
-	std::cout << length("long string, really...") << '\n';
+	// error
+	//std::cout << "Hello
 
-	// constructs string_view, no allocation, plus it's constexpr
-	constexpr auto v = std::string_view("long string, really...");
-	std::cout << length_view(v) << '\n';
+	//	World" << '\n';
+
+	std::cout << R"(Hello"
+
+		"World)" << '\n';
+
+	// to have "s inside raw string, enclose it in expression
+	std::cout << R"stuff("Hello" "World")stuff" << '\n';
 }
