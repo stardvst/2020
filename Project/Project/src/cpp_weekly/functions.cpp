@@ -1,40 +1,36 @@
 #include <iostream>
 
-void func()
-try
+// higher order functions: something that takes a function
+// and returns a function
+
+template <typename F, typename G>
+auto f_of_g(F &&f, G &&g)
 {
+	return[
+		f = std::forward<F>(f),
+		g = std::forward<G>(g)]
+	{
+		return f(g());
+	};
 }
-catch (...)
+
+int expensive(int)
 {
+	return 0;
 }
 
-struct Throwing
+int evenMoreExpensive()
 {
-	Throwing(int i)
-	{
-		if (i > 2)
-			throw i;
-	}
-};
-
-struct S
-{
-	S(int val) try
-		: t(val)
-	{
-	}
-	catch (int i) // is S constructed at this point? no!
-	{
-		std::cerr << i << " was thrown.\n";
-	}
-
-	Throwing t;
-};
+	return 1;
+}
 
 int main()
 {
-	func();
+	// lazily evaluated, will not do anything until calc() is called
+	auto calc = f_of_g(expensive, evenMoreExpensive);
 
-	S s1(5); // throws at construction
-	S s2(1); // does not throw
+	int val;
+	std::cin >> val;
+	if (val > 2)
+		std::cout << calc();
 }
