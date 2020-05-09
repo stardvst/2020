@@ -1,36 +1,42 @@
 #include <iostream>
+#include <functional>
 
-// higher order functions: something that takes a function
-// and returns a function
+/*
+	callables:
+	1. lambda
+	2. free functions
+	3. member function pointers
+	4. member objects <---
+*/
 
-template <typename F, typename G>
-auto f_of_g(F &&f, G &&g)
+struct S
 {
-	return[
-		f = std::forward<F>(f),
-		g = std::forward<G>(g)]
+	int i{10};
+
+	int get() const
 	{
-		return f(g());
-	};
-}
-
-int expensive(int)
-{
-	return 0;
-}
-
-int evenMoreExpensive()
-{
-	return 1;
-}
+		return i;
+	}
+};
 
 int main()
 {
-	// lazily evaluated, will not do anything until calc() is called
-	auto calc = f_of_g(expensive, evenMoreExpensive);
+	S s;
+	//return s.i; // cannot do if i is not inited
+	std::cout << s.i << '\n';
 
-	int val;
-	std::cin >> val;
-	if (val > 2)
-		std::cout << calc();
+	int (S:: * mem_fn_ptr)() const = &S::get;
+	std::cout << (s.*mem_fn_ptr)() << '\n';
+
+	S *sPtr = &s;
+	std::cout << (sPtr->*mem_fn_ptr)() << '\n';
+
+	// member objects, not particular i, but i in general
+	int(S:: * mem_obj_ptr) = &S::i;
+	std::cout << s.*mem_obj_ptr << '\n';
+	std::cout << std::invoke(mem_obj_ptr, s) << '\n';
+
+	S s2;
+	s2.i = 5;
+	std::cout << s2.*mem_obj_ptr << '\n';
 }
