@@ -1,57 +1,62 @@
 #include <iostream>
-#include <iomanip>
+#include <type_traits>
 
-// example 1
-template <typename T>
-constexpr T pi = T(3.1415926535897932385L);
-
-// example 2
-constexpr auto get()
+template <typename Float>
+auto go(const Float value1, const Float value2)
 {
-	return 42.4;
+	return value1 + value2;
 }
 
-template <typename T>
-constexpr T value = T(get());
-
-// example 4, specilization
-template <int Value>
-constexpr auto fib = fib<Value - 1> +fib<Value - 2>;
-
-template <>
-constexpr auto fib<0> = 0;
-
-template <>
-constexpr auto fib<1> = 1;
-
-// example 5
-template <typename T, typename U>
-constexpr bool is_same = false;
-
-template <typename T>
-constexpr bool is_same<T, T> = true;
-
-// example 6
-template <typename T>
-constexpr auto add = [](const T &lhs, const T &rhs)
+// SFINAE
+template <typename Float, typename = std::enable_if_t<std::is_floating_point_v<Float>>>
+auto goFloat(const Float value1, const Float value2)
 {
-	return lhs + rhs;
-};
+	return value1 + value2;
+}
+
+// c++20, more clear error if not float
+template <typename Float>
+auto goFloat20(const Float value1, const Float value2) requires std::is_floating_point_v<Float>
+{
+	return value1 + value2;
+}
+
+// or pass concept to template
+template <typename T>
+concept floating_point = std::is_floating_point_v<T>;
+
+template <floating_point Float>
+auto goFloat20Con1(const Float value1, const Float value2)
+{
+	return value1 + value2;
+}
+
+floating_point goFloat20Con2(const floating_point auto value1, const floating_point auto value2)
+{
+	return value1 + value2;
+}
 
 int main()
 {
-	std::cout << std::setprecision(20);
-	std::cout << pi<float> << '\n';
-	std::cout << pi<double> << '\n';
-	std::cout << pi<long double> << '\n';
-	std::cout << pi<int> << '\n';
+	std::cout << go(1, 1) << '\n';
+	std::cout << go(1.3, 1.2) << '\n';
+	//std::cout << go(1.3, 2) << '\n';
 
-	std::cout << value<double> << '\n';
+	//std::cout << goFloat(1, 1) << '\n';
+	std::cout << goFloat(1.3, 1.2) << '\n';
+	//std::cout << goFloat(1.3, 2) << '\n';
 
-	std::cout << fib<8> << '\n';
+	////std::cout << goFloat20(1, 1) << '\n';
+	//std::cout << goFloat20(1.3, 1.2) << '\n';
+	////std::cout << goFloat20(1.3, 2) << '\n';
 
-	std::cout << is_same<int, int> << '\n';
-	std::cout << is_same<int, bool> << '\n';
+	//std::cout << goFloat20Con1(1, 1) << '\n';
+	std::cout << goFloat20Con1(1.3, 1.2) << '\n';
+	//std::cout << goFloat20Con1(1.3, 2) << '\n';
 
-	std::cout << add<int>(3.1, 4234.2) << '\n';
+	//std::cout << goFloat20Con2(1, 1) << '\n';
+	std::cout << goFloat20Con2(1.3, 1.2) << '\n';
+	//std::cout << goFloat20Con2(1.3, 2) << '\n';
+
+	floating_point auto val = goFloat20Con2(1.2, 2.3f);
 }
