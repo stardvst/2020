@@ -1,11 +1,16 @@
 #include <iostream>
-#include <vector>
+#include <set>
 
-void remove5s(std::vector<int> &vec, std::list<int> &lst)
+bool hasData(const std::set<int> &s)
 {
-	//vec.erase(std::remove(begin(vec), end(vec), 5), end(vec));
-	std::erase(vec, 5);
-	std::erase(lst, 5);
+	//return s.count(4) > 0;
+	return s.contains(4);
+}
+
+bool hasDataMulti(const std::multiset<int> &ms)
+{
+	//return ms.count(4) > 0; // more costly calculation
+	return ms.contains(4);
 }
 
 int main()
