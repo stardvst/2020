@@ -1,24 +1,33 @@
 #include <iostream>
-#include <type_traits>
+#include <mutex>
 
-// why is there such function?
-constexpr double tan1(double angle)
+constexpr /* must */ int getValue()
 {
-	if /*constexpr*/ (std::is_constant_evaluated())
-		// do the fast thing that doesn't rely on inline assembly
-		return 5;
-	else
-		// do the fast thing that does use inline assembly
-		return 10;
+	return 42;
+}
+
+int useValue()
+{
+	//static auto val = getValue(); // init-ed compile time
+	constinit static auto val = getValue(); // surely init-ed compile time
+	return ++val; // val is not constant
+}
+
+void f()
+{
+	constinit static std::mutex m; // init-ed compile time, before function executes
+
+	std::scoped_lock l(m); // global mutable thread-safe lock-protected value
+	constinit static auto val = 4; // init-ed compile time
+	++val;
+	return val;
 }
 
 int main()
 {
-	std::cout << tan1(1) << '\n'; // 10
+	constinit static /* must */ auto i = 4;
 
-	constexpr auto v = tan1(1);
-	std::cout << v << '\n'; // 5
+	constinit static auto j = getValue();
 
-	const auto s = tan1(1);
-	std::cout << s << '\n'; // 5
+
 }
