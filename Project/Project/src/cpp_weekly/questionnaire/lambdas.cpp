@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 
 // #1. reasons for wanting lambda to function pointer conversion
@@ -53,6 +54,118 @@ struct Fib
 	}
 };
 
+// #4. implement this in c++98:
+// a) auto add = [](const auto &lhs, const auto &rhs) { return lhs + rhs; };
+// b) auto lazy = [](const auto &func, const auto &lhs, const auto &rhs)
+//		{
+//			return [func, lhs, rhs]
+//			{
+//				return func(lhs, rhs);
+//			};
+//		};
+
+struct add
+{
+	//template <typename LHS, typename RHS>
+	template <typename Param>
+	Param operator()(const Param &lhs, const Param &rhs) const
+	{
+		return lhs + rhs;
+	}
+
+	template <typename LHS, typename RHS>
+	struct Return_Type
+	{
+		typedef LHS type;
+	};
+};
+
+struct lazy
+{
+	template <typename Func, typename LHS, typename RHS>
+	struct Inner
+	{
+		Func cb;
+		LHS lhs;
+		RHS rhs;
+
+		Inner(const Func &c, const LHS &l, const RHS &r)
+			: cb(c)
+			, lhs(l)
+			, rhs(r)
+		{
+		}
+
+		typename Func::template Return_Type<LHS, RHS>::type operator()() const
+		{
+			return cb(lhs, rhs);
+		}
+	};
+
+	template <typename Func, typename LHS, typename RHS>
+	Inner<Func, LHS, RHS>
+		operator()(const Func &cb, const LHS &lhs, const RHS &rhs) const
+	{
+		return Inner<Func, LHS, RHS>(cb, lhs, rhs);
+	}
+};
+
+//int main()
+//{
+//	std::cout << lazy()(add(), 3, 4)() << '\n';
+//}
+
+// #5. explain the difference
+
+template <typename First, typename Second>
+struct pair1
+{
+	First first;
+	Second second;
+};
+
+template <typename First, typename Second>
+struct pair2
+{
+	// needs to perform move operations to initialize first/second
+	template <typename First_, typename Second_>
+	pair2(First_ &&first_, Second_ &&second_)
+		: first(std::forward<First_>(first_))
+		, second(std::forward<Second_>(second_))
+	{
+	}
+
+	First first;
+	Second second;
+};
+
+// helper class to reason about object lifetime
+struct Helper
+{
+	Helper() { std::puts("Helper()"); }
+	~Helper() { std::puts("~Helper()"); }
+	Helper(const Helper &) { std::puts("Helper(const Helper &)"); }
+	Helper(Helper &&) { std::puts("Helper(Helper &&)"); }
+	Helper &operator=(const Helper &) { std::puts("operator=(const Helper &)"); }
+	Helper &operator=(Helper &&) { std::puts("operator=(Helper &&)"); }
+};
+
+// what happens when constructing the objects?
+// what is the constexpr story?
+// should pair2's constructor be explicit?
+// in what context can pair1 be constructed?
+
 int main()
 {
+	{
+		// construct two (in-place), destroy two; no copy/move
+		std::puts("pair1");
+		pair1<Helper, Helper> p1{ Helper{}, Helper{} };
+	}
+
+	{
+		// needs to perform move operations to initialize first/second
+		std::puts("\npair2");
+		pair2<Helper, Helper> p2{ Helper{}, Helper{} };
+	}
 }
