@@ -155,6 +155,7 @@ struct Helper
 // should pair2's constructor be explicit?
 // in what context can pair1 be constructed?
 
+/*
 int main()
 {
 	{
@@ -168,4 +169,37 @@ int main()
 		std::puts("\npair2");
 		pair2<Helper, Helper> p2{ Helper{}, Helper{} };
 	}
+}
+*/
+
+// #6. how and why are two options generating so different code?
+
+#include <cstdio>
+#include <string>
+
+#define OPTION_2
+
+template <typename ...Param>
+void printList(const std::string &c1, const Param &...params)
+{
+#ifdef OPTION_1
+	auto printElement = [&](const auto &p)
+	{
+		std::puts((c1 + ": " + p).c_str());
+	};
+	(printElement(params), ...);
+#endif
+
+#ifdef OPTION_2
+	([&](const auto &p)
+	{
+		std::puts((c1 + ": " + p).c_str());
+	}(params), ...);
+#endif
+}
+
+
+int main()
+{
+	printList("Hello", "1", "2", "3");
 }
