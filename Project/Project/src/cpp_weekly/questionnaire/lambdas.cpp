@@ -173,11 +173,12 @@ int main()
 */
 
 // #6. how and why are two options generating so different code?
+// why does option 2 compile into more code (1300 lines for many parameters vs 416)?
 
 #include <cstdio>
 #include <string>
 
-#define OPTION_2
+#define OPTION_1
 
 template <typename ...Param>
 void printList(const std::string &c1, const Param &...params)
@@ -187,10 +188,15 @@ void printList(const std::string &c1, const Param &...params)
 	{
 		std::puts((c1 + ": " + p).c_str());
 	};
+
+	// we have function, and call it n times, which is fine
 	(printElement(params), ...);
 #endif
 
 #ifdef OPTION_2
+	// we have lambda being defined inside fold expression =>
+	// compiler is forced to expand (generate) it n times,
+	// and not able to optimize it
 	([&](const auto &p)
 	{
 		std::puts((c1 + ": " + p).c_str());
@@ -198,8 +204,7 @@ void printList(const std::string &c1, const Param &...params)
 #endif
 }
 
-
 int main()
 {
-	printList("Hello", "1", "2", "3");
+	printList("Hello", "1", "2", "3", "4", "5", "6", "7");
 }
