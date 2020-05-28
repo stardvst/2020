@@ -208,3 +208,22 @@ int main()
 {
 	printList("Hello", "1", "2", "3", "4", "5", "6", "7");
 }
+
+// #7. do lambda objects follow normal lifetime rules?
+// yes, captures are destroyed when lambda goes out of scope
+
+// #8. how do lambdas help us write efficient code?
+
+void theVec()
+{
+	// const vector
+	const auto vec = []
+	{
+		std::vector<int> vec(10, 10);
+		vec.push_back(42);
+		return vec;
+	}();
+}
+
+// #9. how is it possible to overuse lambdas?
+// lambdas inside of templates
