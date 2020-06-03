@@ -1,24 +1,26 @@
 #include <iostream>
 #include <regex>
+#include <string_view>
 
-void dumpRegex(const std::cmatch &match)
+bool isErrorString(std::string sv)
 {
-	std::cout << "matches:\n";
-	for (std::size_t i = 0; i < match.size(); ++i)
-	{
-		std::cout << i << ": " << match.str(i) << '\n';
-	}
+	return std::regex_match(sv.begin(), sv.end(), std::regex(".*ERROR.*"));
+}
+
+const std::regex errRx(".*ERROR.*");
+
+bool isErrorStringSomewhatBetter(std::string sv)
+{
+	return std::regex_match(sv.begin(), sv.end(), errRx);
+}
+
+#include <ctre.hpp>
+
+bool isErrorStringCompileTime(std::string sv)
+{
+	return ctre::match<".*ERROR.*">(sv).matched();
 }
 
 int main()
 {
-	// this is slower than without optimize flag;
-	// regex and matches should be constructed only as needed,
-	// i.e. should be outside for loop, const and maybe static
-	std::regex rx(R"((\d+): \[([^\]]+)\] (.*))", std::regex::optimize);
-	std::cmatch match;
-
-	std::regex_match("123: [error] Hello World", match, rx);
-
-	dumpRegex(match);
 }
