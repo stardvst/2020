@@ -75,9 +75,10 @@ Complex operator+(const Complex &lhs, const Complex &rhs)
 #include <iostream>
 #include <string>
 
+template <typename Contained>
 struct Pointer
 {
-	std::string *p;
+	Contained *p;
 
 	constexpr auto *operator->()
 	{
@@ -87,6 +88,11 @@ struct Pointer
 	constexpr auto *operator->() const
 	{
 		return p;
+	}
+
+	constexpr auto operator*() const
+	{
+		return *p;
 	}
 };
 
@@ -112,6 +118,12 @@ int main()
 	const auto result = c + Complex{ 3, 4 };
 
 	std::string s{ "Hello world" };
-	Pointer dumbPointer{ &s };
+	Pointer<std::string> dumbPointer{ &s };
 	std::cout << dumbPointer->size() << '\n';
+	std::cout << ((*dumbPointer.operator->())).size() << '\n';
+	std::cout << (dumbPointer.operator->())->size() << '\n';
+
+	Pointer<Pointer<std::string>> dumpPointer2{ &dumbPointer };
+	//dumpPointer2->size(); // cannot do
+	std::cout << (*dumpPointer2)->size() << '\n';
 }
