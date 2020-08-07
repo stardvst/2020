@@ -31,7 +31,7 @@ public:
 				// mask = 110111, mask & ~currBit = 110111 & 111101 = 110101
 				mask &= ~currBit;
 			}
-			else if (val != 0)
+			else if (val != '0')
 			{
 				throw std::logic_error("Unknown character");
 			}
