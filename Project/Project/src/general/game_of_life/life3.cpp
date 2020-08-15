@@ -37,13 +37,13 @@ void initialize_board()
 	board = (char *)malloc(row * col * sizeof(char));
 	int i, j;
 
-	/* initialize all cells to spaces */
+	/* intiialize all cells to spaces */
 	for (i = 0; i < row; i++)
 	{
 		for (j = 0; j < col; j++)
 		{
 			int idx = i * col + j;
-			board[idx] = ' ';
+			*(board + idx) = ' ';
 		}
 	}
 }
@@ -71,7 +71,7 @@ int read_file(const char *fileName)
 			sscanf(s, "%d %d", &r, &c);
 
 			/* make sure cell is within board boundaries */
-			if (!(c > 0 && c <= col && r > 0 && r <= row))
+			if (!(c > 0 && c <= col && r > 0 && r < row))
 			{
 				fprintf(stderr, "Cell is outside the board\n");
 				return -1;
@@ -86,35 +86,37 @@ int read_file(const char *fileName)
 	return 0;
 }
 
-void print(char *brd)
+void print()
 {
 	int	i, j;
 
-	/* print first row */
+	/* preint first row */
 	printf("*");
 	for (i = 0; i < col; ++i)
 		printf("-");
 	printf("*\n");
 
-	/* print the board */
+	/* preint the board */
 	for (i = 0; i < row; i++)
 	{
 		printf("|");
 
 		for (j = 0; j < col; j++)
-		{
-			/* calculate hash */
-			char ch = *(brd + i * col + j);
-			printf("%c", ch);
-		}
+			printf("%c", *(board + i * col + j));
 		printf("|\n");
 	}
 
-	/* print last row */
+	/* preint last row */
 	printf("*");
 	for (i = 0; i < col; ++i)
 		printf("-");
 	printf("*\n");
+}
+
+int is_alive(char ch)
+{
+	/* if char is 0-9 or X, it is alive */
+	return (ch >= '0' && ch <= '9') || ch == 'X' ? 1 : 0;
 }
 
 int calculate_hash(char *brd)
@@ -132,12 +134,6 @@ int calculate_hash(char *brd)
 	return hash;
 }
 
-int is_alive(char ch)
-{
-	/* if char is 0-9 or X, it is alive */
-	return (ch >= '0' && ch <= '9') || ch == 'X' ? 1 : 0;
-}
-
 int next()
 {
 	int	i, j, a;
@@ -145,7 +141,7 @@ int next()
 	char *p;
 	char *newboard = (char *)malloc(row * col * sizeof(char));
 
-	/* get alive neighbor count for each cell */
+	/* get alive neighbour count for each cell */
 	for (i = 0; i < row; i++)
 	{
 		for (j = 0; j < col; j++)
@@ -222,13 +218,13 @@ int next()
 		}
 	}
 
-	index += 1;
-	boards[index] = newboard;
-
 	/* copy the new board to current board */
 	for (i = 0; i < row; i++)
 		for (j = 0; j < col; j++)
-			board[i * col + j] = newboard[i * col + j];
+			*(board + i * col + j) = *(newboard + i * col + j);
+
+	index += 1;
+	boards[index] = newboard;
 
 	/* check if board hash already exists */
 	int found = 1;
@@ -252,10 +248,11 @@ int next()
 					}
 				}
 			}
-
 			if (found)
 				return 0;
 		}
+		else
+			found = 0;
 	}
 
 	if (found)
@@ -277,9 +274,6 @@ int main(const int argc, char *argv[])
 		return -1;
 	}
 
-	/* create board hashes */
-	hashes = (int *)malloc(row * col * sizeof(int));
-
 	/* get generation count */
 	sscanf(argv[4], "%d", &generations);
 
@@ -294,13 +288,18 @@ int main(const int argc, char *argv[])
 	if (read_file(argv[1]) != 0)
 		return -1;
 
+	/* create board hashes */
+	hashes = (int *)malloc(row * col * sizeof(int));
+
 	/* print the initial board */
 	char *cpyboard = NULL;
 	cpyboard = (char *)malloc(row * col * sizeof(char));
 	memcpy(cpyboard, board, row * col * sizeof(char));
 	boards[index] = cpyboard;
 	hashes[index] = calculate_hash(board);
-	print(board);
+
+	/* print the initial board */
+	print();
 
 	/* process next generations */
 	for (i = 0; i < generations; ++i)
@@ -311,19 +310,23 @@ int main(const int argc, char *argv[])
 		/* get next generation */
 		if (next() == 0)
 		{
-			print(board);
+			print();
+			free(board);
+			free(cpyboard);
+			free(hashes);
 			printf("\nPeriod detected (%d): exiting\n", index);
 			return 0;
 		}
 
 		/* print new generation */
-		print(board);
+		print();
 	}
 
 	/* print Finished */
 	printf("\nFinished\n");
 
 	free(board);
+	free(cpyboard);
 	free(hashes);
 	return 0;
 }
